@@ -7,3 +7,4 @@
 7) fix the pushing secrets to GitHub/ streamlit secrets deployment issue
 8) implement rls and dls in supabase tables
 9) add functionality to edit forms and responses
+10) figure out a way to add media files (profile pictures and pictures for forms and media in forms)
