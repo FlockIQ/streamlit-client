@@ -17,20 +17,25 @@ def render_page():
     with col1:
         st.header("Published Forms")
         st.write("Browse and interact with forms shared by others or your organization.")
-        if st.button("View Published Forms"):
-            st.switch_page("pages/list_forms.py")
+        if st.button("View Published Forms", use_container_width=True):
+            st.session_state.active_page = "List Forms"
+            st.rerun()
+                
+                
    
     with col2:
         st.header("Create Form")
         st.write("Design custom forms tailored to your specific needs.")
-        if st.button("Create New Form"):
-            st.switch_page("pages/create_form.py")
+        if st.button("Create New Form", use_container_width=True):
+            st.session_state.active_page = "Create Fpr,"
+            st.rerun()
    
     with col3:
         st.header("My Forms")
         st.write("Manage forms you've created, track responses, and analyze data.")
-        if st.button("My Forms"):
-            st.switch_page("pages/list_forms.py")
+        if st.button("My Forms", use_container_width=True):
+            st.session_state.active_page = "My Forms"
+            st.rerun()
    
     # Additional guidance
     st.markdown("""

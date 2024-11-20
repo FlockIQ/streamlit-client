@@ -1,79 +1,99 @@
 import streamlit as st
 from src.services.auth_service import AuthService
-
 # Import page modules
-import pages.list_forms as list_forms
-import pages.create_form as create_form
-import pages.profile as profile
-import pages.welcome as welcome
-import pages.home as Home 
+import src.index.list_forms as list_forms
+import src.index.create_form as create_form
+import src.index.my_forms as my_forms
+import src.index.fill_form as fill_form
+import src.index.my_responses as my_responses
+import src.index.profile as profile
+import src.index.welcome as welcome
+import src.index.home as home
+import src.index.login as login
+import src.index.signup as signup
+
+# Navbar setup
+NAV_CATEGORIES = {
+    "Main": ["List Forms"],
+    "Forms": ["Create Form", "My Forms", "Fill Form", "My Responses", "Profile"],
+}
+
+# Page render functions
+PAGE_FUNCTIONS = {
+    "Home": home.render_page,
+    "Welcome": welcome.render_page,
+    "List Forms": list_forms.render_page,
+    "Create Form": create_form.render_page,
+    "My Forms": my_forms.render_page,
+    "Fill Form": fill_form.render_page,
+    "My Responses": my_responses.render_page,
+    "Profile": profile.render_page,
+    "Login": login.render_page,
+    "Signup": signup.render_page,
+}
+
+def logout(auth_service):
+    auth_service.sign_out()
+    st.session_state.logged_in = False
+    st.session_state.active_page = "Home"  # Change to Home instead of Login
+    st.rerun()
+
+def render_navbar(auth_service):
+    # Build navigation dynamically based on login state
+    with st.sidebar:
+        if st.session_state.logged_in:
+            # Logout button
+            if st.button("Logout"):
+                logout(auth_service)
+            
+            # Render categories and pages
+            for category, pages in NAV_CATEGORIES.items():
+                with st.expander(category, expanded=True):
+                    for page in pages:
+                        if st.button(page):
+                            st.session_state.active_page = page
+                            st.rerun()
+        else:
+            # Login/Signup for logged-out users
+            if st.button("Login"):
+                st.session_state.active_page = "Login"
+                st.experimental_rerun()
+            if st.button("Signup"):
+                st.session_state.active_page = "Signup"
+                st.experimental_rerun()
 
 def main():
-    # Set page configuration to remove padding
+    # Set page configuration
     st.set_page_config(page_title="FlockIQ", layout="wide", initial_sidebar_state="collapsed")
-   
+    
     # Initialize authentication service
     auth_service = AuthService()
-   
-    # Global logout function
-    def logout():
-        auth_service.sign_out()
-        st.session_state['logged_in'] = False
-        st.switch_page("pages/login.py")
     
-    # Check if the user is logged in
-    if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False  # Default to not logged in
+    # Check and initialize session state
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
     
-    # Global logout button
-    if st.session_state['logged_in']:
-        # Add logout button to the top right of every page
-        col1, col2 = st.columns([9, 1])
-        with col2:
-            if st.button("Logout"):
-                logout()
-   
-    # Render the appropriate page
-    if not st.session_state['logged_in']:
-        Home.render_page()
+    # Set default page to Home for non-logged-in users
+    if "active_page" not in st.session_state:
+        st.session_state.active_page = "Home"
+    
+    # Render navbar
+    render_navbar(auth_service)
+    
+    # Render active page with logic for logged-in users
+    active_page = st.session_state.active_page
+    
+    if st.session_state.logged_in:
+        # If logged in and no active page, default to Welcome
+        if active_page in ["Home", "Login", "Signup"]:
+            active_page = "Welcome"
     else:
-        # Determine the page to render
-        desired_page = st.session_state.get('current_page', 'Welcome')
-       
-        # Create a sidebar for navigation
-        st.sidebar.title("FlockIQ")
-        st.sidebar.write(f"Welcome, {st.session_state.get('user_email', 'User')}")  # Use session email if available
-       
-        # Page selection
-        page = st.sidebar.radio("Navigate", [
-            "Welcome",
-            "Published Forms",
-            "Create Form",
-            "My Forms",
-            "Profile"
-        ], index=[
-            "Welcome", 
-            "Published Forms", 
-            "Create Form", 
-            "My Forms", 
-            "Profile"
-        ].index(desired_page))
-       
-        # Clear the current_page from session state after using it
-        if 'current_page' in st.session_state:
-            del st.session_state['current_page']
-       
-        # Render selected page
-        if page == "Welcome":
-            welcome.render_page()
-        elif page == "Published Forms":
-            list_forms.render_page()
-        elif page == "Create Form":
-            create_form.render_page()
-        elif page == "My Forms":
-            list_forms.render_page()
-        elif page == "Profile":
-            profile.render_page()
+        # If not logged in, restrict to Home, Login, Signup
+        if active_page not in ["Home", "Login", "Signup"]:
+            active_page = "Home"
+    
+    # Render the appropriate page
+    PAGE_FUNCTIONS[active_page]()
 
 if __name__ == "__main__":
     main()
