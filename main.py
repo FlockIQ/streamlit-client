@@ -1,48 +1,57 @@
 import streamlit as st
-import src.pages.list_forms as list_forms
-import src.pages.create_form as create_form
-import src.pages.my_forms as my_forms
-import src.pages.fill_form as fill_form
-import src.pages.my_responses as my_responses
-import src.pages.form_dashboard as form_dashboard
-import src.pages.form_analytics as form_analytics
+import sys
+import os
+from src.config.supabase_client import get_session
+from src.services.auth_service import AuthService
+
+# Import page modules
+import pages.list_forms as list_forms
+import pages.create_form as create_form
+import pages.login as login
+import pages.signup as signup
+import pages.profile as profile
+import home  # Import the new home page
 
 def main():
-    st.set_page_config(page_title="Form Builder", layout="wide")
-
-    st.sidebar.title("Form Builder")
+    # Set page configuration to remove padding
+    st.set_page_config(page_title="FlockIQ", layout="wide", initial_sidebar_state="collapsed")
     
-    # Page selection
-    page = st.sidebar.radio(
-        "Navigate", 
-        [
+    # Check authentication status
+    session = get_session()
+    auth_service = AuthService()
+    
+    # If not logged in, show home page
+    if not session:
+        home.render_page()
+    else:
+        # Logged in user flow
+        # Create a sidebar for navigation
+        st.sidebar.title("FlockIQ")
+        st.sidebar.write(f"Welcome, {session.user.email}")
+        
+        # Page selection
+        page = st.sidebar.radio("Navigate", [
+            "Home",
             "Published Forms",
             "Create Form",
             "My Forms",
-            "Fill Form",
-            "My Responses",
-            "Form Dashboard",
-            "Form Analytics"
-        ]
-    )
-    
-    # Render selected page
-    if page == "Published Forms":
-        list_forms.render_page()
-    elif page == "Create Form":
-        create_form.render_page()
-    elif page == "My Forms":
-        my_forms.render_page()
-    elif page == "Fill Form":
-        fill_form.render_page()
-    elif page == "My Responses":
-        my_responses.render_page()
-    elif page == "Form Dashboard":
-        form_dashboard.render_page()
-    elif page == "Form Analytics":
-        form_analytics.render_page()
-    else:
-        st.error("Page not found.")
+            "Profile",
+            "Logout"
+        ])
+        
+        # Render selected page
+        if page == "Home":
+            Home.render_page()
+        elif page == "Published Forms":
+            list_forms.render_page()
+        elif page == "Create Form":
+            create_form.render_page()
+        elif page == "Profile":
+            profile.render_page()
+        elif page == "Logout":
+            # Logout logic
+            auth_service.sign_out()
+            st.experimental_rerun()
 
 if __name__ == "__main__":
     main()

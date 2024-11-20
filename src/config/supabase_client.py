@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
@@ -19,3 +20,15 @@ def get_supabase_client() -> Client:
     except Exception as e:
         print(f"Error initializing Supabase client: {e}")
         raise
+
+def get_session():
+    """
+    Get the current Supabase session
+    """
+    supabase = get_supabase_client()
+    try:
+        session = supabase.auth.get_session()
+        return session
+    except Exception as e:
+        print(f"Error getting session: {e}")
+        return None
