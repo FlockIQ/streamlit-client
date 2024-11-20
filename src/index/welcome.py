@@ -27,7 +27,7 @@ def render_page():
         st.header("Create Form")
         st.write("Design custom forms tailored to your specific needs.")
         if st.button("Create New Form", use_container_width=True):
-            st.session_state.active_page = "Create Fpr,"
+            st.session_state.active_page = "Create Form"
             st.rerun()
    
     with col3:

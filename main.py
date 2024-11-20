@@ -14,7 +14,7 @@ import src.index.signup as signup
 
 # Navbar setup
 NAV_CATEGORIES = {
-    "Main": ["List Forms"],
+    "Main": ["Welcome", "List Forms"],
     "Forms": ["Create Form", "My Forms", "Fill Form", "My Responses", "Profile"],
 }
 
