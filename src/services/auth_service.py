@@ -91,9 +91,10 @@ class AuthService:
             })
         
             # Check if user is successfully authenticated
-            if response and response.user:
+            if response.session:
                 # Set session state for logged-in user
                 st.session_state['logged_in'] = True
+                st.session_state.supabase_session = response.session
                 st.session_state['current_page'] = 'Welcome'
                 return response.user  # User is authenticated
             else:
@@ -109,10 +110,16 @@ class AuthService:
         Sign out the current user
         """
         try:
+            # Remove session from Streamlit state
+            if 'supabase_session' in st.session_state:
+                del st.session_state.supabase_session
+            
+            # Sign out from Supabase
             self.supabase.auth.sign_out()
+            
             return True
         except Exception as e:
-            st.error(f"Logout error: {str(e)}")
+            st.error(f"Logout failed: {str(e)}")
             return False
     
     def get_user_profile(self, user_id):
