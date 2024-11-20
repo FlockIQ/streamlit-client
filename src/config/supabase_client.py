@@ -1,34 +1,29 @@
-import os
-from dotenv import load_dotenv
-from supabase import create_client, Client
 import streamlit as st
-
-# Load environment variables
-load_dotenv()
-
-# Initialize Supabase client
-url: str = os.getenv("PUBLIC_SUPABASE_URL")
-key: str = os.getenv("PUBLIC_SUPABASE_ANON_KEY")
+from supabase import create_client, Client
 
 def get_supabase_client() -> Client:
     """
-    Creates and returns a Supabase client instance
+    Creates and returns a Supabase client instance using Streamlit secrets
     """
     try:
+        # Retrieve Supabase URL and key from Streamlit secrets
+        url = st.secrets["SUPABASE_URL"]
+        key = st.secrets["SUPABASE_KEY"]
+        
         supabase: Client = create_client(url, key)
         return supabase
     except Exception as e:
-        print(f"Error initializing Supabase client: {e}")
+        st.error(f"Error initializing Supabase client: {e}")
         raise
 
 def get_session():
     """
     Get the current Supabase session
     """
-    supabase = get_supabase_client()  # Create the Supabase client
     try:
-        session = supabase.auth.get_session()  # Retrieve the current session
+        supabase = get_supabase_client()
+        session = supabase.auth.get_session()
         return session
     except Exception as e:
-        print(f"Error getting session: {e}")
+        st.error(f"Error getting session: {e}")
         return None
