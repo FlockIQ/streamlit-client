@@ -46,7 +46,7 @@ REFERENCES
 | public       | response_answers_question_id_fkey         | response_answers           | question_id     | questions            | id                  |
 | public       | response_answers_response_id_fkey         | response_answers           | response_id     | responses            | id                  |
 
-POLICIES
+POLICIES (RLS temporarily disabled)
 
 [
   {
