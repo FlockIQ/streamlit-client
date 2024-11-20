@@ -57,7 +57,7 @@ def render_page():
                     st.info("Please log in with your new account.")
                    
                     # Optional: Automatically redirect to login
-                    # st.switch_page("pages/login.py")
+                    st.switch_page("pages/login.py")
                 else:
                     st.error("Signup failed")
             
