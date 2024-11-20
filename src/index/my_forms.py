@@ -9,7 +9,7 @@ class MyFormsPage:
         if not is_user_authenticated():
             st.warning("Please log in to view your forms")
             if st.button("Go to Login", key="login_redirect"):
-                st.switch_page("src/index/login.py")
+                st.session_state.active_page = "Login"
             st.stop()
 
         self.supabase = get_supabase_client()
@@ -100,8 +100,8 @@ class MyFormsPage:
         
         # Create Form button
         st.markdown("---")
-        if st.button("Create New Form", key="create_form_button"):
-            st.switch_page("src/index/create_form.py")
+        if st.button("Create New Form", use_container_width=True):
+            st.session_state.active_page = "Create Form"            
 
 def render_page():
     """

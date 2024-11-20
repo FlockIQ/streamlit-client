@@ -56,10 +56,12 @@ def render_page():
                 if user:
                     st.success("Account created successfully!")
                     st.info("Please log in with your new account.")
-                    time.sleep(5)
+                    time.sleep(3)
                    
                     # Automatically redirect to login
-                    st.switch_page("pages/login.py")
+                    st.session_state.active_page = "Login"
+
+                    st.rerun()
                 else:
                     st.error("Signup failed")
             

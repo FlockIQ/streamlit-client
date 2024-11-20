@@ -95,8 +95,8 @@ class FormCreationPage:
         # Ensure user is logged in
         if not is_user_authenticated():
             st.warning("Please log in to create a form")
-            if st.button("Go to Login", key="login_redirect"):
-                st.switch_page("src/index/login.py")
+            if st.button("Go to Login", use_container_width=True):
+                st.session_state.active_page = "Create Form"
             return
 
         # Form title
