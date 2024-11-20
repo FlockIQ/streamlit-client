@@ -6,3 +6,4 @@
 6) make supabase session handling work throughout the app instead of relying on st.session_state
 7) fix the pushing secrets to GitHub/ streamlit secrets deployment issue
 8) implement rls and dls in supabase tables
+9) add functionality to edit forms and responses

@@ -1,7 +1,7 @@
 import streamlit as st
 import uuid
 from typing import List, Dict, Any
-from src.config.supabase_client import get_supabase_client, get_session
+from src.config.supabase_client import get_supabase_client, get_session, is_user_authenticated
 from src.services.form_service import FormService
 
 class FormCreationPage:
@@ -37,6 +37,16 @@ class FormCreationPage:
         """
         Render individual question input fields
         """
+        # Mapping of user-friendly types to database-compatible types
+        type_mapping = {
+            'Short Text': 'short_text',
+            'Long Text': 'long_text',
+            'Multiple Choice': 'multiple_choice',
+            'Checkboxes': 'checkbox',
+            'Date': 'date',
+            'Number': 'number'
+        }
+
         st.subheader(f"Question {index}")
         
         # Question text
@@ -45,10 +55,10 @@ class FormCreationPage:
             key=f"question_text_{index}"
         )
         
-        # Question type selection
+        # Question type selection with corrected types
         question_type = st.selectbox(
             f"Question {index} Type", 
-            ['Short Text', 'Paragraph', 'Multiple Choice', 'Checkboxes', 'Dropdown'],
+            list(type_mapping.keys()),
             key=f"question_type_{index}"
         )
         
@@ -60,7 +70,7 @@ class FormCreationPage:
         
         # Additional options based on question type
         options = []
-        if question_type == 'Multiple Choice' or question_type == 'Checkboxes' or question_type == 'Dropdown':
+        if question_type == 'Multiple Choice':
             option_input = st.text_input(
                 f"Enter options (comma-separated)", 
                 key=f"options_{index}"
@@ -69,7 +79,7 @@ class FormCreationPage:
         
         return {
             'text': question_text,
-            'type': question_type.lower().replace(' ', '_'),
+            'type': type_mapping[question_type],  # Use mapped database-compatible type
             'is_required': is_required,
             'options': options if options else None,
             'id': str(uuid.uuid4())
@@ -82,28 +92,23 @@ class FormCreationPage:
         st.title("Create a New Form")
         
         # Ensure user is logged in
-        if not self.session:
+        if not is_user_authenticated():
             st.warning("Please log in to create a form")
+            if st.button("Go to Login", key="login_redirect"):
+                st.switch_page("src/index/login.py")
             return
 
         # Form title
-        form_title = st.text_input("Form Title")
-        form_description = st.text_area("Form Description (Optional)")
+        form_title = st.text_input("Form Title", key="form_title_input")
+        form_description = st.text_area("Form Description (Optional)", key="form_description_input")
 
         # Form privacy settings
-        is_public = st.checkbox("Make form publicly accessible")
-        allow_anonymous = st.checkbox("Allow anonymous responses")
+        is_public = st.checkbox("Make form publicly accessible", key="is_public_checkbox")
+        allow_anonymous = st.checkbox("Allow anonymous responses", key="allow_anonymous_checkbox")
 
-        # Dynamic question addition
-        st.header("Questions")
-        
         # Session state to manage questions dynamically
         if 'questions' not in st.session_state:
             st.session_state.questions = []
-
-        # Add question button
-        if st.button("➕ Add Question"):
-            st.session_state.questions.append({})
 
         # Render existing questions
         questions_to_save = []
@@ -112,13 +117,32 @@ class FormCreationPage:
                 question = self.render_question_input(idx)
                 questions_to_save.append(question)
 
-        # Remove question functionality
-        if st.session_state.questions and st.button("🗑️ Remove Last Question"):
-            st.session_state.questions.pop()
-            st.experimental_rerun()
+        # Horizontal buttons for managing questions and form
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            # Add Question Button
+            add_question = st.button("➕ Add Question", key="add_question_button", use_container_width=True)
+        
+        with col2:
+            # Remove Last Question Button (only show if questions exist)
+            if st.session_state.questions:
+                remove_question = st.button("🗑️ Remove Last Question", key="remove_last_question", use_container_width=True)
+        
+        with col3:
+            # Create Form Button
+            create_form = st.button("🖋️ Create Form", key="create_form_button", use_container_width=True)
 
-        # Submit form
-        if st.button("Create Form"):
+        # Handle button actions
+        if add_question:
+            st.session_state.questions.append({})
+            st.rerun()
+        
+        if 'remove_question' in locals() and remove_question:
+            st.session_state.questions.pop()
+            st.rerun()
+        
+        if create_form:
             if self.validate_form(form_title, questions_to_save):
                 try:
                     # Create form with all details
