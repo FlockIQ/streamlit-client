@@ -26,14 +26,18 @@ def render_page():
         submitted = st.form_submit_button("Sign Up")
        
         if submitted:
-            # Validate inputs
-            if not email or not password:
-                st.error("Email and password are required")
-                return
+            # Client-side validation
+            if not email:
+                st.error("Email is required")
+                st.stop()
+           
+            if not password:
+                st.error("Password is required")
+                st.stop()
            
             if password != confirm_password:
                 st.error("Passwords do not match")
-                return
+                st.stop()
            
             # Prepare profile data for user_info table
             profile_data = {
@@ -52,12 +56,17 @@ def render_page():
                     st.success("Account created successfully!")
                     st.info("Please log in with your new account.")
                    
-                    # Redirect to login page
-                    st.switch_page("pages/login.py")
+                    # Optional: Automatically redirect to login
+                    # st.switch_page("pages/login.py")
                 else:
                     st.error("Signup failed")
+            
+            except ValueError as ve:
+                # Handle specific validation errors
+                st.error(str(ve))
             except Exception as e:
-                st.error(f"Signup error: {str(e)}")
+                # Generic error handling
+                st.error(f"An unexpected error occurred: {str(e)}")
    
     # Add a login link
     st.markdown("Already have an account? ")

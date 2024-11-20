@@ -7,31 +7,76 @@ class AuthService:
    
     def sign_up(self, email, password, profile_data):
         """
-        Sign up a new user
+        Sign up a new user with comprehensive error handling and profile creation
+        
+        Args:
+            email (str): User's email address
+            password (str): User's password
+            profile_data (dict): Additional user profile information
+        
+        Returns:
+            user: Supabase user object if signup is successful
         """
         try:
+            # Validate email and password
+            if not email or not password:
+                raise ValueError("Email and password are required")
+            
+            # Email validation (basic regex)
+            import re
+            email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+            if not re.match(email_regex, email):
+                raise ValueError("Invalid email format")
+            
+            # Password strength validation
+            if len(password) < 8:
+                raise ValueError("Password must be at least 8 characters long")
+            
             # Prepare signup data
             signup_data = {
                 "email": email,
                 "password": password
             }
-           
+            
             # Create user in Supabase Auth
             response = self.supabase.auth.sign_up(signup_data)
-           
+            
             # If signup is successful, add additional profile data
             if response.user:
                 user_id = response.user.id
-                # Insert additional profile data into user_info table
-                profile_data['id'] = user_id
-                self.update_profile(user_id, profile_data)
-               
-                return response.user
-           
+                
+                # Prepare profile data for insertion
+                profile_insert_data = {
+                    'id': user_id,
+                    'email': email,
+                    'first_name': profile_data.get('first_name', ''),
+                    'last_name': profile_data.get('last_name', ''),
+                    'phone': profile_data.get('phone', ''),
+                    'organization': profile_data.get('organization', ''),
+                    'bio': profile_data.get('bio', '')
+                }
+                
+                # Insert profile data
+                profile_response = (
+                    self.supabase
+                    .table('user_info')
+                    .insert(profile_insert_data)
+                    .execute()
+                )
+                
+                # Check if profile insertion was successful
+                if profile_response.data:
+                    return response.user
+                else:
+                    # Rollback user creation if profile insertion fails
+                    self.supabase.auth.admin.delete_user(user_id)
+                    raise Exception("Failed to create user profile")
+            
             return None
+        
         except Exception as e:
-            # More detailed error handling
-            st.error(f"Signup error: {str(e)}")
+            # Comprehensive error logging
+            print(f"Signup error: {str(e)}")
             raise
 
     def sign_in(self, email, password):
