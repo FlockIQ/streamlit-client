@@ -50,11 +50,10 @@ def render_page():
                
                 if user:
                     st.success("Account created successfully!")
-                    st.info("Please proceed to login.")
-                    
-                    # Add a button to go to login page
-                    if st.button("Go to Login"):
-                        st.switch_page("pages/login.py")
+                    st.info("Please log in with your new account.")
+                   
+                    # Redirect to login page
+                    st.switch_page("pages/login.py")
                 else:
                     st.error("Signup failed")
             except Exception as e:

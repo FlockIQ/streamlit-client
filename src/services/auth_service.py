@@ -44,20 +44,20 @@ class AuthService:
                 "email": email,
                 "password": password
             })
-            
+        
             # Check if user is successfully authenticated
             if response and response.user:
-                return response.user
+                # Set session state for logged-in user
+                st.session_state['logged_in'] = True
+                st.session_state['current_page'] = 'Welcome'
+                return response.user  # User is authenticated
             else:
-                # If no user is returned, raise an exception
                 raise ValueError("Authentication failed")
         
         except Exception as e:
-            # Log the specific error for debugging
             print(f"Login error details: {str(e)}")
-            
-            # Raise a more generic error for the user
             raise ValueError("Invalid email or password")
+
     
     def sign_out(self):
         """

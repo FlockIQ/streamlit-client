@@ -1,65 +1,79 @@
 import streamlit as st
-import sys
-import os
-from src.config.supabase_client import get_session
 from src.services.auth_service import AuthService
 
 # Import page modules
 import pages.list_forms as list_forms
 import pages.create_form as create_form
-import pages.login as login
-import pages.signup as signup
 import pages.profile as profile
-import Home  # Import the new home page
+import pages.welcome as welcome
+import pages.home as Home 
 
 def main():
     # Set page configuration to remove padding
     st.set_page_config(page_title="FlockIQ", layout="wide", initial_sidebar_state="collapsed")
-    
-    # Check authentication status
-    session = get_session()
+   
+    # Initialize authentication service
     auth_service = AuthService()
+   
+    # Global logout function
+    def logout():
+        auth_service.sign_out()
+        st.session_state['logged_in'] = False
+        st.switch_page("pages/login.py")
     
-    # If not logged in, show home page
-    if not session:
+    # Check if the user is logged in
+    if 'logged_in' not in st.session_state:
+        st.session_state['logged_in'] = False  # Default to not logged in
+    
+    # Global logout button
+    if st.session_state['logged_in']:
+        # Add logout button to the top right of every page
+        col1, col2 = st.columns([9, 1])
+        with col2:
+            if st.button("Logout"):
+                logout()
+   
+    # Render the appropriate page
+    if not st.session_state['logged_in']:
         Home.render_page()
     else:
-        # Check if there's a desired page from login
-        desired_page = st.session_state.get('current_page', 'Home')
-        
+        # Determine the page to render
+        desired_page = st.session_state.get('current_page', 'Welcome')
+       
         # Create a sidebar for navigation
         st.sidebar.title("FlockIQ")
-        st.sidebar.write(f"Welcome, {session.user.email}")
-        
+        st.sidebar.write(f"Welcome, {st.session_state.get('user_email', 'User')}")  # Use session email if available
+       
         # Page selection
         page = st.sidebar.radio("Navigate", [
-            "Home",
+            "Welcome",
             "Published Forms",
             "Create Form",
             "My Forms",
-            "Profile",
-            "Logout"
-        ], index=["Home", "Published Forms", "Create Form", "My Forms", "Profile", "Logout"].index(desired_page))
-        
+            "Profile"
+        ], index=[
+            "Welcome", 
+            "Published Forms", 
+            "Create Form", 
+            "My Forms", 
+            "Profile"
+        ].index(desired_page))
+       
         # Clear the current_page from session state after using it
         if 'current_page' in st.session_state:
             del st.session_state['current_page']
-        
+       
         # Render selected page
-        if page == "Home":
-            Home.render_page()
+        if page == "Welcome":
+            welcome.render_page()
         elif page == "Published Forms":
             list_forms.render_page()
         elif page == "Create Form":
             create_form.render_page()
         elif page == "My Forms":
-            list_forms.render_page()  # Assuming this is the same as Published Forms
+            list_forms.render_page()
         elif page == "Profile":
             profile.render_page()
-        elif page == "Logout":
-            # Logout logic
-            auth_service.sign_out()
-            st.rerun()
 
 if __name__ == "__main__":
     main()

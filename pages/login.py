@@ -19,21 +19,16 @@ def render_page():
             if not email or not password:
                 st.error("Please enter both email and password")
                 return
-           
+        
             # Attempt login
             try:
                 user = auth_service.sign_in(email, password)
-               
+            
                 if user:
                     st.success("Login successful!")
-                    # Use session state to store login status and desired page
-                    st.session_state['logged_in'] = True
                     
-                    # Redirect to list forms page after login
-                    st.session_state['current_page'] = 'Published Forms'
-                    
-                    # Trigger a rerun to refresh the page
-                    st.rerun()
+                    # Explicitly set Streamlit to use the new page
+                    st.switch_page("main.py")
                 else:
                     st.error("Invalid email or password")
             except Exception as e:

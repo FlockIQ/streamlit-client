@@ -25,9 +25,9 @@ def get_session():
     """
     Get the current Supabase session
     """
-    supabase = get_supabase_client()
+    supabase = get_supabase_client()  # Create the Supabase client
     try:
-        session = supabase.auth.get_session()
+        session = supabase.auth.get_session()  # Retrieve the current session
         return session
     except Exception as e:
         print(f"Error getting session: {e}")
