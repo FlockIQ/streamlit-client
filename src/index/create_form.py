@@ -165,7 +165,7 @@ class FormCreationPage:
                         # Reset questions and redirect to My Forms page
                         st.session_state.questions = []
                         st.session_state.active_page = "My Forms"
-                        st.time(3)
+                        time.sleep(3)
                         st.rerun()
                     else:
                         st.error("Failed to create form")
