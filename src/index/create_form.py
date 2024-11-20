@@ -3,6 +3,7 @@ import uuid
 from typing import List, Dict, Any
 from src.config.supabase_client import get_supabase_client, get_session, is_user_authenticated
 from src.services.form_service import FormService
+import time
 
 class FormCreationPage:
     def __init__(self):
@@ -161,8 +162,11 @@ class FormCreationPage:
                     
                     if new_form:
                         st.success("Form created successfully!")
-                        # Optional: Reset form or redirect
+                        # Reset questions and redirect to My Forms page
                         st.session_state.questions = []
+                        st.session_state.active_page = "My Forms"
+                        st.time(3)
+                        st.rerun()
                     else:
                         st.error("Failed to create form")
                 
