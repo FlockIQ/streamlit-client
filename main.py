@@ -57,10 +57,10 @@ def render_navbar(auth_service):
             # Login/Signup for logged-out users
             if st.button("Login"):
                 st.session_state.active_page = "Login"
-                st.experimental_rerun()
+                st.rerun()
             if st.button("Signup"):
                 st.session_state.active_page = "Signup"
-                st.experimental_rerun()
+                st.rerun()
 
 def main():
     # Set page configuration

@@ -39,8 +39,9 @@ def render_page():
     st.markdown("Don't have an account? ")
     signup_col1, signup_col2 = st.columns([1, 5])
     with signup_col1:
-        if st.button("Sign Up"):
-            st.switch_page("pages/signup.py")
+        if st.button("Sign Up", use_container_width=True):
+            st.session_state.active_page = "Signup"
+            st.rerun()
 
 # This allows the page to be imported and used in the main app
 if __name__ == "__main__":

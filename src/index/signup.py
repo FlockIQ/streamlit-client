@@ -74,8 +74,9 @@ def render_page():
     st.markdown("Already have an account? ")
     login_col1, login_col2 = st.columns([1, 5])
     with login_col1:
-        if st.button("Log In"):
-            st.switch_page("pages/login.py")
+        if st.button("Log In", use_container_width=True):
+            st.session_state.active_page = "Login"
+            st.rerun()
 
 # This allows the page to be imported and used in the main app
 if __name__ == "__main__":
