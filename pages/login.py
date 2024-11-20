@@ -1,5 +1,6 @@
 import streamlit as st
 from src.services.auth_service import AuthService
+import time
 
 def render_page():
     st.header("Login to FlockIQ")
@@ -26,7 +27,7 @@ def render_page():
             
                 if user:
                     st.success("Login successful!")
-                    
+                    time.sleep(2)
                     # Explicitly set Streamlit to use the new page
                     st.switch_page("main.py")
                 else:

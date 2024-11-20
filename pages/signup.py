@@ -1,5 +1,6 @@
 import streamlit as st
 from src.services.auth_service import AuthService
+import time
 
 def render_page():
     st.header("Sign Up for FlockIQ")
@@ -55,8 +56,9 @@ def render_page():
                 if user:
                     st.success("Account created successfully!")
                     st.info("Please log in with your new account.")
+                    time.sleep(5)
                    
-                    # Optional: Automatically redirect to login
+                    # Automatically redirect to login
                     st.switch_page("pages/login.py")
                 else:
                     st.error("Signup failed")
