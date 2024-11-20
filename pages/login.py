@@ -26,6 +26,14 @@ def render_page():
                
                 if user:
                     st.success("Login successful!")
+                    # Use session state to store login status and desired page
+                    st.session_state['logged_in'] = True
+                    
+                    # Redirect to list forms page after login
+                    st.session_state['current_page'] = 'Published Forms'
+                    
+                    # Trigger a rerun to refresh the page
+                    st.rerun()
                 else:
                     st.error("Invalid email or password")
             except Exception as e:

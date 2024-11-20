@@ -10,7 +10,7 @@ import pages.create_form as create_form
 import pages.login as login
 import pages.signup as signup
 import pages.profile as profile
-import home  # Import the new home page
+import Home  # Import the new home page
 
 def main():
     # Set page configuration to remove padding
@@ -22,9 +22,11 @@ def main():
     
     # If not logged in, show home page
     if not session:
-        home.render_page()
+        Home.render_page()
     else:
-        # Logged in user flow
+        # Check if there's a desired page from login
+        desired_page = st.session_state.get('current_page', 'Home')
+        
         # Create a sidebar for navigation
         st.sidebar.title("FlockIQ")
         st.sidebar.write(f"Welcome, {session.user.email}")
@@ -37,7 +39,11 @@ def main():
             "My Forms",
             "Profile",
             "Logout"
-        ])
+        ], index=["Home", "Published Forms", "Create Form", "My Forms", "Profile", "Logout"].index(desired_page))
+        
+        # Clear the current_page from session state after using it
+        if 'current_page' in st.session_state:
+            del st.session_state['current_page']
         
         # Render selected page
         if page == "Home":
@@ -46,12 +52,14 @@ def main():
             list_forms.render_page()
         elif page == "Create Form":
             create_form.render_page()
+        elif page == "My Forms":
+            list_forms.render_page()  # Assuming this is the same as Published Forms
         elif page == "Profile":
             profile.render_page()
         elif page == "Logout":
             # Logout logic
             auth_service.sign_out()
-            st.experimental_rerun()
+            st.rerun()
 
 if __name__ == "__main__":
     main()
