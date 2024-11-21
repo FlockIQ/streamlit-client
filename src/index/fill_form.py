@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 from src.config.supabase_client import get_supabase_client
 from typing import Dict, List, Any
 from datetime import datetime
@@ -72,18 +73,17 @@ class FormFillService:
             st.error(f"Error fetching form: {e}")
             return None
 
-    def submit_response(self, form_id: str, answers: List[Dict[str, Any]], user_id: str = None, is_anon: bool = False) -> bool:
+    def submit_response(self, form_id: str, answers: List[Dict[str, Any]], is_anon: bool = False) -> Dict:
         """
-        Submit form responses
+        Submit form responses with more detailed error handling
         
         Args:
             form_id (str): ID of the form being submitted
             answers (List[Dict]): List of answer dictionaries
-            user_id (str, optional): ID of the user submitting
             is_anon (bool, optional): Whether submission is anonymous
         
         Returns:
-            bool: Success of submission
+            Dict with submission status and message
         """
         try:
             # Start transaction
@@ -97,7 +97,7 @@ class FormFillService:
             response_result = self.supabase.table('responses').insert(response_insert).execute()
             
             if not response_result.data:
-                raise Exception("Failed to create response")
+                return {'success': False, 'message': "Failed to create response entry"}
             
             response_id = response_result.data[0]['id']
             
@@ -117,12 +117,11 @@ class FormFillService:
             
             # Commit transaction
             self.supabase.rpc('commit')
-            return True
+            return {'success': True, 'message': "Form submitted successfully!", 'response_id': response_id}
         except Exception as e:
             # Rollback in case of error
             self.supabase.rpc('rollback')
-            st.error(f"Error submitting response: {e}")
-            return False
+            return {'success': False, 'message': f"Error submitting response: {str(e)}"}
 
 def render_question(question: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -213,12 +212,12 @@ def render_question(question: Dict[str, Any]) -> Dict[str, Any]:
 
 def render_page():
     """
-    Main page for filling out forms with redirection to responses
+    Main page for filling out forms with improved submission handling
     """
-    # Add session state for form submission
-    if 'form_submitted' not in st.session_state:
-        st.session_state.form_submitted = False
-
+    # Initialize session state for submission status
+    if 'submission_status' not in st.session_state:
+        st.session_state.submission_status = None
+    
     # Create service instance inside the function
     form_service = FormFillService()
     
@@ -238,11 +237,10 @@ def render_page():
         st.error("Form not found or you don't have access.")
         return
     
-    # Display form details with creator and creation information
+    # Display form metadata
     form = form_details['form']
     questions = form_details['questions']
     
-    # Display form metadata
     st.markdown(f"**Creator:** {form_details['creator_name']}")
     st.markdown(f"**Created on:** {form_details['formatted_date']} at {form_details['formatted_time']}")
     
@@ -272,21 +270,35 @@ def render_page():
             return
         
         # Submit response
-        success = form_service.submit_response(
+        submission_result = form_service.submit_response(
             form_id, 
             answers, 
             is_anon=is_anon
         )
         
-        if success:
-            # Update session state to trigger redirection
-            st.session_state.form_submitted = True
-            st.session_state.submitted_form_id = form_id
+        # Store submission status in session state
+        st.session_state.submission_status = submission_result
+        
+        # Display submission message
+        if submission_result['success']:
+            st.success(submission_result['message'])
             
-            # Redirect to responses page
+            # Create a placeholder for countdown
+            countdown_placeholder = st.empty()
+            
+            # Countdown and redirect
+            for i in range(3, 0, -1):
+                countdown_placeholder.info(f"Redirecting to My Responses in {i} seconds...")
+                time.sleep(1)
+            
+            # Clear the countdown placeholder
+            countdown_placeholder.empty()
+            
+            # Set active page and rerun
+            st.session_state.active_page = "My Responses"
             st.rerun()
         else:
-            st.error("Failed to submit form. Please try again.")
+            st.error(submission_result['message'])
 
 def render_responses_page():
     """
