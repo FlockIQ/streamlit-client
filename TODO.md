@@ -11,3 +11,5 @@
 11) add actual use template functionality
 12) add proper analytics with real data
 13) enable search functionality in list forms
+14) add functionaality where user can start filling a form directly from published forms page
+15) add sharing forms with a link functionality
