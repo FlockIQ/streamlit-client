@@ -13,3 +13,6 @@
 13) enable search functionality in list forms
 14) add functionaality where user can start filling a form directly from published forms page
 15) add sharing forms with a link functionality
+16) add timer
+17) add a sequence diagram for the whole infrastructure
+18) add comparison with google forms for analytics 
