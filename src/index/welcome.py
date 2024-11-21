@@ -69,7 +69,7 @@ def render_page():
         feature_cols = st.columns(2)
         with feature_cols[0]:
             if st.button("New Form", use_container_width=True):
-                st.session_state.active_page = "New Form"
+                st.session_state.active_page = "Create Form"
                 st.rerun()
         with feature_cols[1]:
             if st.button("Form Templates", use_container_width=True):
