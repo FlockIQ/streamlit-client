@@ -161,15 +161,27 @@ class FormCreationPage:
                     )
                     
                     if new_form:
+                        # Display success message
                         st.success("Form created successfully!")
-                        # Reset questions and redirect to My Forms page
+                        
+                        # Create a placeholder for the countdown
+                        countdown_placeholder = st.empty()
+                        
+                        # Countdown and redirect
+                        for i in range(3, 0, -1):
+                            countdown_placeholder.info(f"Redirecting to My Forms in {i} seconds...")
+                            time.sleep(1)
+                        
+                        # Clear the countdown placeholder
+                        countdown_placeholder.empty()
+                        
+                        # Reset questions and set the active page
                         st.session_state.questions = []
                         st.session_state.active_page = "My Forms"
-                        time.sleep(3)
                         st.rerun()
                     else:
-                        st.error("Failed to create form")
-                
+                        st.error("Failed to create the form. Please try again.")
+
                 except Exception as e:
                     st.error(f"Error creating form: {e}")
 
