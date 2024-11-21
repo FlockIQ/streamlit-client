@@ -6,6 +6,9 @@ import src.index.create_form as create_form
 import src.index.my_forms as my_forms
 import src.index.fill_form as fill_form
 import src.index.my_responses as my_responses
+import src.index.form_templates as form_templates
+import src.index.form_analytics as form_analytics
+import src.index.form_dashboard as form_dashboard
 import src.index.profile as profile
 import src.index.welcome as welcome
 import src.index.home as home
@@ -14,8 +17,9 @@ import src.index.signup as signup
 
 # Navbar setup
 NAV_CATEGORIES = {
-    "Main": ["Welcome", "List Forms"],
+    "Main": ["Welcome", "List Forms",  "Form Templates"],
     "Forms": ["Create Form", "My Forms", "Fill Form", "My Responses", "Profile"],
+    "Analytics": [ "Form Dashboard", "Form Analytics"],
 }
 
 # Page render functions
@@ -30,6 +34,9 @@ PAGE_FUNCTIONS = {
     "Profile": profile.render_page,
     "Login": login.render_page,
     "Signup": signup.render_page,
+    "Form Templates": form_templates.render_page,
+    "Form Dashboard": form_dashboard.render_page,
+    "Form Analytics": form_analytics.render_page
 }
 
 def logout(auth_service):
