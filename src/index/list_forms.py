@@ -1,6 +1,7 @@
 import streamlit as st
 from src.config.supabase_client import get_supabase_client
 from src.services.form_service import FormService
+from datetime import datetime
 
 class ListFormsPage:
     def __init__(self):
@@ -12,36 +13,71 @@ class ListFormsPage:
         Retrieve all published forms with additional details
         """
         try:
-            response = (
+            # First, let's print out all forms and their creator_ids for debugging
+            forms_response = (
                 self.supabase.table('forms')
                 .select('id, created_at, creator_id')
                 .eq('is_public', True)
                 .execute()
             )
             
-            # Fetch creator information for each form
-            forms = response.data or []
+            print("Forms response:", forms_response.data)  # Debug print
+            
+            forms = forms_response.data or []
+            
             for form in forms:
-                # Get creator's name or email
-                user_response = (
+                print(f"Processing form with creator_id: {form.get('creator_id')}")  # Debug print
+                
+                # Make sure creator_id exists and is not None
+                if not form.get('creator_id'):
+                    form['creator_name'] = 'Unknown Creator (No creator_id)'
+                    continue
+
+                # Get creator's info using creator_id with debug logging
+                user_info_response = (
                     self.supabase.table('user_info')
-                    .select('first_name, last_name, email')
+                    .select('*')  # Select all columns for debugging
                     .eq('id', form['creator_id'])
                     .execute()
                 )
-                
-                if user_response.data:
-                    user = user_response.data[0]
-                    form['creator_name'] = (
-                        f"{user.get('first_name', '')} {user.get('last_name', '')}".strip() 
-                        or user.get('email', 'Unknown Creator')
-                    )
+
+                if user_info_response.data and len(user_info_response.data) > 0:
+                    user_info = user_info_response.data[0]
+                    
+                    # Print all available fields in user_info for debugging
+                    print("Available user info fields:", user_info.keys())
+                    
+                    first_name = user_info.get('first_name', '').strip()
+                    last_name = user_info.get('last_name', '').strip()
+                    email = user_info.get('email', '').strip()
+                    
+                    print(f"Retrieved name parts: '{first_name}' '{last_name}' '{email}'")  # Debug print
+
+                    # Set creator name with detailed fallback logging
+                    if first_name or last_name:
+                        form['creator_name'] = f"{first_name} {last_name}".strip()
+                        print(f"Using full name: {form['creator_name']}")
+                    elif email:
+                        form['creator_name'] = email
+                        print("Falling back to email")
+                    else:
+                        form['creator_name'] = 'Unknown Creator (No name or email)'
+                        print("No name or email found")
                 else:
-                    form['creator_name'] = 'Unknown Creator'
-            
+                    form['creator_name'] = 'Unknown Creator (No user info found)'
+                    print(f"No user info found for creator_id: {form['creator_id']}")
+                
+                # Format timestamps
+                if form['created_at']:
+                    created_at = datetime.fromisoformat(form['created_at'].replace('Z', '+00:00'))
+                    form['formatted_date'] = created_at.strftime("%B %d, %Y")
+                    form['formatted_time'] = created_at.strftime("%I:%M %p")
+
             return forms
+
         except Exception as e:
-            st.error(f"Error fetching published forms: {e}")
+            print(f"Detailed error: {str(e)}")  # Debug print
+            st.error(f"Error fetching published forms: {str(e)}")
             return []
 
     def get_form_questions(self, form_id):
@@ -69,10 +105,10 @@ class ListFormsPage:
         # Fetch questions for this form
         questions = self.get_form_questions(form['id'])
         
-        # Display form metadata
+        # Display form metadata with formatted date/time
         st.write(f"**Form ID:** `{form['id']}`")
         st.write(f"**Created By:** {form['creator_name']}")
-        st.write(f"**Created At:** {form['created_at']}")
+        st.write(f"**Created On:** {form['formatted_date']} at {form['formatted_time']}")
         
         # Display questions
         st.subheader("Questions")
@@ -106,8 +142,8 @@ class ListFormsPage:
                     col1, col2 = st.columns([3, 1])
                     
                     with col1:
-                        st.write(f"Created by: {form['creator_name']}")
-                        st.write(f"Created on: {form['created_at']}")
+                        st.write(f"**Created by:** {form['creator_name']}")
+                        st.write(f"**Created on:** {form['formatted_date']} at {form['formatted_time']}")
                     
                     with col2:
                         if st.button("View Details", key=f"details_{form['id']}"):
