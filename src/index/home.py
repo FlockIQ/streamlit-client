@@ -27,7 +27,7 @@ def render_page():
             st.markdown("""
             <div class="center-content">
                 <h1>FlockIQ</h1>
-                <h3>Revolutionize Your Surveys and Forms</h3>
+                <h3>Revolutionizing Your Surveys and Forms</h3>
                 <p>Create, distribute, and analyze surveys with unprecedented ease and insight.</p>
             </div>
             """, unsafe_allow_html=True)
