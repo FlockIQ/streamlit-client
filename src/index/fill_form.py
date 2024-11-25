@@ -75,7 +75,7 @@ class FormFillService:
 
     def submit_response(self, form_id: str, answers: List[Dict[str, Any]], is_anon: bool = False) -> Dict:
         """
-        Submit form responses with more detailed error handling
+        Submit form responses
         
         Args:
             form_id (str): ID of the form being submitted
@@ -300,90 +300,8 @@ def render_page():
         else:
             st.error(submission_result['message'])
 
-def render_responses_page():
-    """
-    Page to show responses for a submitted form
-    """
-    st.title("Your Form Responses")
-    
-    if 'submitted_form_id' not in st.session_state or not st.session_state.submitted_form_id:
-        st.error("No recent form submission found.")
-        return
-    
-    supabase = get_supabase_client()
-    form_id = st.session_state.submitted_form_id
-    
-    # Fetch form details
-    form_details = (
-        supabase.table('forms')
-        .select('*')
-        .eq('id', form_id)
-        .execute()
-    )
-    
-    # Fetch latest response for this form
-    responses = (
-        supabase.table('responses')
-        .select('id, created_at')
-        .eq('form_id', form_id)
-        .order('created_at', desc=True)
-        .limit(1)
-        .execute()
-    )
-    
-    if not responses.data:
-        st.error("No responses found for this form.")
-        return
-    
-    response = responses.data[0]
-    
-    # Fetch response answers
-    response_answers = (
-        supabase.table('response_answers')
-        .select('question_id, answer_value, checkbox_value')
-        .eq('response_id', response['id'])
-        .execute()
-    )
-    
-    # Fetch questions to match answers
-    questions = (
-        supabase.table('questions')
-        .select('id, questions_text, question_type')
-        .eq('form_id', form_id)
-        .order('order_number')
-        .execute()
-    )
-    
-    # Create a mapping of question IDs to their text
-    question_map = {q['id']: q for q in questions.data}
-    
-    st.header("Response Details")
-    st.write(f"Submitted on: {datetime.fromisoformat(response['created_at'].replace('Z', '+00:00')).strftime('%B %d, %Y at %I:%M %p')}")
-    
-    for answer in response_answers.data:
-        question = question_map.get(answer['question_id'], {})
-        st.markdown(f"**{question.get('questions_text', 'Unknown Question')}**")
-        
-        # Handle different question types
-        if question.get('question_type') == 'checkbox':
-            st.write(answer.get('checkbox_value', 'No response'))
-        else:
-            st.write(answer.get('answer_value', 'No response'))
-    
-    # Reset form submission state
-    if st.button("Back to Form Fill"):
-        st.session_state.form_submitted = False
-        st.session_state.submitted_form_id = None
-        st.rerun()
-
 def main():
-    """
-    Main application logic to handle page navigation
-    """
-    if 'form_submitted' not in st.session_state or not st.session_state.form_submitted:
-        render_page()
-    else:
-        render_responses_page()
+    render_page()
 
 if __name__ == "__main__":
     st.set_page_config(page_title="Form Filler", page_icon="📝")
