@@ -10,6 +10,8 @@ class FormCreationPage:
         self.supabase = get_supabase_client()
         self.form_service = FormService(self.supabase)
         self.session = get_session()
+    
+    type_requiring_options = ('Multiple Choice', 'Checkboxes')
 
     def validate_form(self, form_title: str, questions: List[Dict[str, Any]]) -> bool:
         """
@@ -28,7 +30,7 @@ class FormCreationPage:
                 st.error(f"Question {idx} text cannot be empty")
                 return False
             
-            if question.get('type') == 'multiple_choice' and not question.get('options'):
+            if question.get('type') in self.type_requiring_options and not question.get('options'):
                 st.error(f"Multiple choice question {idx} must have options")
                 return False
         
@@ -71,7 +73,7 @@ class FormCreationPage:
         
         # Additional options based on question type
         options = []
-        if question_type == 'Multiple Choice':
+        if question_type in self.type_requiring_options:
             option_input = st.text_input(
                 f"Enter options (comma-separated)", 
                 key=f"options_{index}"
