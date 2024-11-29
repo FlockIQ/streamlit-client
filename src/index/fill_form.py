@@ -212,25 +212,25 @@ def render_question(question: Dict[str, Any]) -> Dict[str, Any]:
 
 def render_page():
     """
-    Main page for filling out forms with improved submission handling
+    Main page for filling out forms with multiple form ID input methods
     """
-    # Initialize session state for submission status
-    if 'submission_status' not in st.session_state:
-        st.session_state.submission_status = None
-    
-    # Create service instance inside the function
+    # Initialize form service
     form_service = FormFillService()
     
+
     st.title("Fill a Form")
     
-    # Form ID input
-    form_id = st.text_input("Enter Form ID", help="Paste the unique form ID you want to fill")
+    # Get form ID from session state or text input
+    form_id = st.text_input(
+        "Enter Form ID", 
+        value=st.session_state.get('form_id', ''), 
+        help="Paste the unique form ID you want to fill"
+    )
     
     if not form_id:
         st.info("Please enter a form ID to proceed.")
         return
     
-    # Fetch form details
     form_details = form_service.get_form_details(form_id)
     
     if not form_details:
