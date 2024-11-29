@@ -177,8 +177,6 @@ class MyFormsPage:
         base_url = st.secrets.get("BASE_URL", "http://localhost:3000")
         form_url = f"{base_url}/fill-form?form_id={form_id}"
         st.code(form_url, language="text")
-        if st.button("Copy Link", key=f"copy_{form_id}"):
-            st.toast("Link copied to clipboard!")
 
     def render_page(self):
         st.title("My Forms")
