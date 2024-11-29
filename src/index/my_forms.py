@@ -131,7 +131,7 @@ class MyFormsPage:
         try:
             response = (
                 self.supabase.table('forms')
-                .select('id, created_at, is_public, allow_anon')
+                .select('id, created_at, is_public, allow_anon, form_title, form_description')
                 .eq('creator_id', self.session.user.id)
                 .execute()
             )
@@ -149,7 +149,8 @@ class MyFormsPage:
 
     @st.dialog("Form Details")
     def render_form_details_dialog(self, form):
-        st.write(f"**Form ID:** `{form['id']}`")
+        st.write(f"**Title:** {form['form_title']}")
+        st.write(f"**Description:** {form['form_description']}")
         st.write(f"**Created on:** {form['formatted_date']} at {form['formatted_time']}")
         st.write(f"**Public Form:** {'Yes' if form['is_public'] else 'No'}")
         st.write(f"**Allows Anonymous Responses:** {'Yes' if form['allow_anon'] else 'No'}")
@@ -192,8 +193,8 @@ class MyFormsPage:
                     col1, col2, col3 = st.columns([2, 2, 1])
                     
                     with col1:
-                        st.write(f"Created on: {form['formatted_date']}")
-                        st.write(f"Time: {form['formatted_time']}")
+                        st.write(f"Title: {form['form_title']}")
+                        st.write(f"Created On: {form['formatted_date']}, {form['formatted_time']}")
                     
                     with col2:
                         st.write(f"Public: {'Yes' if form['is_public'] else 'No'}")

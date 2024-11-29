@@ -24,6 +24,8 @@ class FormService:
 
             # Insert form
             form_insert = {
+                'form_title': form_data.get('title'),
+                'form_description': form_data.get('description'),
                 'creator_id': creator_id,
                 'is_public': form_data.get('is_public', False),
                 'allow_anon': form_data.get('allow_anonymous', False)
