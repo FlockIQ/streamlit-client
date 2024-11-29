@@ -1,5 +1,4 @@
 import streamlit as st
-import uuid
 from datetime import datetime
 from src.config.supabase_client import get_supabase_client, get_session, is_user_authenticated
 from src.services.form_service import FormService
@@ -148,19 +147,13 @@ class MyFormsPage:
             st.error(f"Error fetching forms: {e}")
             return []
 
-    def render_form_details_modal(self, form):
-        """
-        Render a modal with detailed form information and responses
-        """
-        st.subheader("Form Details")
-        
-        # Display form metadata
+    @st.dialog("Form Details")
+    def render_form_details_dialog(self, form):
         st.write(f"**Form ID:** `{form['id']}`")
         st.write(f"**Created on:** {form['formatted_date']} at {form['formatted_time']}")
         st.write(f"**Public Form:** {'Yes' if form['is_public'] else 'No'}")
         st.write(f"**Allows Anonymous Responses:** {'Yes' if form['allow_anon'] else 'No'}")
         
-        # Display responses
         st.subheader(f"Responses ({len(form['responses'])})")
         
         if not form['responses']:
@@ -173,23 +166,22 @@ class MyFormsPage:
                     if response['is_anon']:
                         st.warning("This response was submitted anonymously")
                     
-                    # Display answers
                     for answer in response['answers']:
                         st.markdown(f"**{answer['question_text']}**")
-                        if answer['question_type'] == 'checkbox':
-                            value = answer['checkbox_value']
-                        else:
-                            value = answer['answer_value']
+                        value = answer['checkbox_value'] if answer['question_type'] == 'checkbox' else answer['answer_value']
                         st.write(value if value else 'No response')
                     st.markdown("---")
 
+    def generate_form_link(self, form_id):
+        base_url = st.secrets.get("BASE_URL", "http://localhost:3000")
+        form_url = f"{base_url}/fill-form?form_id={form_id}"
+        st.code(form_url, language="text")
+        if st.button("Copy Link", key=f"copy_{form_id}"):
+            st.toast("Link copied to clipboard!")
+
     def render_page(self):
-        """
-        Main page rendering method
-        """
         st.title("My Forms")
         
-        # Fetch user's forms
         user_forms = self.get_user_forms()
         
         if not user_forms:
@@ -209,7 +201,9 @@ class MyFormsPage:
                     
                     with col3:
                         if st.button("View Details", key=f"details_{form['id']}"):
-                            self.render_form_details_modal(form)
+                            self.render_form_details_dialog(form)
+                        if st.button("Generate Link", key=f"link_{form['id']}"):
+                            self.generate_form_link(form['id'])
         
         st.markdown("---")
         if st.button("Create New Form", use_container_width=True):
