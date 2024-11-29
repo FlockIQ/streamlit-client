@@ -39,6 +39,25 @@ PAGE_FUNCTIONS = {
     "Form Analytics": form_analytics.render_page
 }
 
+def handle_query_params():
+    """Handle query parameters and set up form routing."""
+    try:
+        form_id = st.query_params.get('form_id')
+        print(form_id)
+        if form_id:
+            if not st.session_state.logged_in:
+                st.session_state.redirect_form_id = form_id
+                st.session_state.active_page = "Login"
+                print("1")
+            else:
+                st.session_state.form_id = form_id
+                st.session_state.active_page = "Fill Form"
+                st.query_params.clear()
+                print("2")
+    except Exception as e:
+        st.error(f"Error handling query parameters: {str(e)}")
+        return None
+
 def logout(auth_service):
     auth_service.sign_out()
     st.session_state.logged_in = False
@@ -86,10 +105,15 @@ def main():
     
     # Render navbar
     render_navbar(auth_service)
+    print("3")
+
+    # Handle query parameters before setting default page
+    handle_query_params()
     
     # Render active page with logic for logged-in users
     active_page = st.session_state.active_page
     
+    print(active_page)
     if st.session_state.logged_in:
         # If logged in and no active page, default to Welcome
         if active_page in ["Home", "Login", "Signup"]:

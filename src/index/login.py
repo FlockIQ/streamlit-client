@@ -20,16 +20,31 @@ def render_page():
             if not email or not password:
                 st.error("Please enter both email and password")
                 return
-        
+       
             # Attempt login
             try:
                 user = auth_service.sign_in(email, password)
-            
+           
                 if user:
                     st.success("Login successful!")
                     time.sleep(2)
-                    # Explicitly set Streamlit to use the new page
-                    st.switch_page("main.py")
+                    
+                    # Check if there's a redirect form ID
+                    if hasattr(st.session_state, 'redirect_form_id'):
+                        # Set the form ID and navigate to Fill Form
+                        st.session_state.form_id = st.session_state.redirect_form_id
+                        st.session_state.active_page = "Fill Form"
+                        # Clear the redirect form ID
+                        del st.session_state.redirect_form_id
+                    else:
+                        # Default to Welcome page if no redirect
+                        st.session_state.active_page = "Welcome"
+                    
+                    # Mark as logged in
+                    st.session_state.logged_in = True
+                    
+                    # Rerun to apply changes
+                    st.rerun()
                 else:
                     st.error("Invalid email or password")
             except Exception as e:

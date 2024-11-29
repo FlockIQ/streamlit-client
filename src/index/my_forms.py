@@ -172,10 +172,11 @@ class MyFormsPage:
                         value = answer['checkbox_value'] if answer['question_type'] == 'checkbox' else answer['answer_value']
                         st.write(value if value else 'No response')
                     st.markdown("---")
-
+    
     def generate_form_link(self, form_id):
-        base_url = st.secrets.get("BASE_URL", "http://localhost:3000")
-        form_url = f"{base_url}/fill-form?form_id={form_id}"
+        """Generate a shareable form link with the form_id as a query parameter."""
+        base_url = st.secrets.get("SITE_URL", "http://localhost:8501")
+        form_url = f"{base_url}?form_id={form_id}"
         st.code(form_url, language="text")
 
     def render_page(self):
@@ -202,7 +203,7 @@ class MyFormsPage:
                         if st.button("View Details", key=f"details_{form['id']}"):
                             self.render_form_details_dialog(form)
                         if st.button("Generate Link", key=f"link_{form['id']}"):
-                            self.generate_form_link(form['id'])
+                            form_link = self.generate_form_link(form['id'])
         
         st.markdown("---")
         if st.button("Create New Form", use_container_width=True):
