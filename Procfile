@@ -1,1 +1,0 @@
-web: streamlit run --server.port 8501 main.py
